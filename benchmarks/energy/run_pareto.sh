@@ -11,8 +11,6 @@
 
 model_name="meta-llama/Llama-3.3-70B-Instruct"
 
-SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL}"
-
 source "$(dirname "$0")/utils.sh"
 
 # Default parallelism configuration (can be overridden)
@@ -122,13 +120,6 @@ run_benchmark_config_all_slos() {
     done
     
     echo "\n===== All SLO benchmarks completed ====="
-    
-    # Slack notification
-    if command -v curl >/dev/null 2>&1; then
-        curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"✅ All SLO Configurations Completed for ${model_name}\\nTested ${#SLO_TUPLES[@]} SLO configurations: ${SLO_TUPLES[*]}\"}" \
-            "$SLACK_WEBHOOK_URL"
-    fi
 }
 
 # Configuration B: vLLM with --use-s1 and --use-s2 for different TP x PP configurations
@@ -196,13 +187,6 @@ run_beam_test() {
     done
     
     echo "\n===== All parallelism configurations completed ====="
-    
-    # Slack notification
-    if command -v curl >/dev/null 2>&1; then
-        curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"✅ S1/S2 All Parallelism Configurations Completed for ${model_name}\\nTested configurations: ${parallelism_configs[*]}\"}" \
-            "$SLACK_WEBHOOK_URL"
-    fi
 }
 
 # Main function

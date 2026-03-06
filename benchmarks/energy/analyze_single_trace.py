@@ -12,8 +12,11 @@ class TraceData:
         self.num_gpus = get_num_gpus(base_directory)
         self.ttft_slo, self.tbt_slo = get_slo(base_directory)
         self.start_time, self.finish_time = get_start_finish_time(base_directory)
+        energy_csvs = glob.glob(f"{base_directory}/traced_dataset/gpu_energy_and_frequency_*.csv")
+        if not energy_csvs:
+            raise ValueError(f"No gpu_energy_and_frequency_*.csv found in {base_directory}/traced_dataset/")
         self.energy_consumption = get_energy_consumption(
-            f"{base_directory}/traced_dataset/gpu_energy_and_frequency_huggyllama_llama-13b.csv",
+            energy_csvs[0],
             self.start_time,
             self.finish_time,
             self.num_gpus,

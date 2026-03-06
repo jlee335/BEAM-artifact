@@ -39,7 +39,6 @@ while [[ $# -gt 0 ]]; do
 done
 
 model_name_cleaned=$(echo $model_name | sed 's/\//-/g')
-SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL}"
 
 # Check for required tools
 if ! command -v bc &> /dev/null; then
@@ -662,13 +661,6 @@ main() {
     echo "  D) S1 + S2 (ours)" >> "$base_dir/ablation_summary.txt"
     echo "" >> "$base_dir/ablation_summary.txt"
     echo "Completed: $(date)" >> "$base_dir/ablation_summary.txt"
-    
-    # Slack notification
-    if command -v curl >/dev/null 2>&1; then
-        curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"✅ Ablation Study Completed for ${model_name}\\nExperiments: A) Vanilla, B2) DynamoLLM, B3) S1-DVFS-only, C) S1-only, D) S1+S2\\nResults: ${base_dir}\"}" \
-            "$SLACK_WEBHOOK_URL"
-    fi
 }
 
 main

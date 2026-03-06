@@ -5,8 +5,6 @@
 
 model_name="meta-llama/Llama-3.3-70B-Instruct"
 
-SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL}"
-
 source "$(dirname "$0")/utils.sh"
 
 # Default parallelism configuration (can be overridden)
@@ -135,18 +133,6 @@ main() {
     echo "" >> "$base_dir/fidelity_summary.txt"
     echo "Completed: $(date)" >> "$base_dir/fidelity_summary.txt"
     
-    # Slack notification
-    if command -v curl >/dev/null 2>&1; then
-        local mode_text
-        if [ -n "$DATASET_PATH" ]; then
-            mode_text="Mode: Traced Dataset ($DATASET_PATH)"
-        else
-            mode_text="Mode: Random Dataset"
-        fi
-        curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"✅ Fidelity Test Completed for ${model_name}\\n${mode_text}\\nTest: S1 + S2 (our approach)\\nResults: ${base_dir}\"}" \
-            "$SLACK_WEBHOOK_URL"
-    fi
 }
 
 main

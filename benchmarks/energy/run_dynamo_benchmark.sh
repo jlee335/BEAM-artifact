@@ -170,6 +170,21 @@ output_lens="150"
 
 
 
+# --- Check if profile already exists ---
+_gpu_name=$(nvidia-smi --query-gpu=name --format=csv,noheader -i 0 | head -1)
+_model_name_clean="${model_name//\//_}"
+_DYNAMO_DIR="$(dirname "$0")/dynamollm_profiles"
+_csv_file="${_DYNAMO_DIR}/dynamo_dvfs_profile_${_gpu_name}_${_model_name_clean}.csv"
+
+if [ -f "$_csv_file" ]; then
+    echo "Profile already exists: $_csv_file"
+    echo "Skipping profiling. Running visualization only."
+    echo ""
+    echo "====== Post-processing: Generating visualizations ======"
+    (cd "$_DYNAMO_DIR" && python3 visualize.py "dynamo_dvfs_profile_${_gpu_name}_${_model_name_clean}.csv")
+    exit 0
+fi
+
 # --- Execution Loop ---
 # Create a directory to store the logs
 mkdir -p $log_dir

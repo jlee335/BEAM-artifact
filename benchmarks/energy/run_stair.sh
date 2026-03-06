@@ -16,8 +16,6 @@ model_name="Qwen/Qwen2.5-14B"
 # model_name="Qwen/Qwen2.5-32B"
 # model_name="ByteResearch/Llama-3-8B-Instruct"
 
-SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL}"
-
 source "$(dirname "$0")/utils.sh"
 # Default parallelism configuration (can be overridden)
 parallelism_configs=(
@@ -129,13 +127,6 @@ main() {
     echo "  D) S1 + S2 (ours)" >> "$base_dir/stair_summary.txt"
     echo "" >> "$base_dir/stair_summary.txt"
     echo "Completed: $(date)" >> "$base_dir/stair_summary.txt"
-    
-    # Slack notification
-    if command -v curl >/dev/null 2>&1; then
-        curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"✅ Stair Pattern Study Completed for ${model_name}\\nRequest Rate Sequence: ${REQUEST_RATE_SEQUENCE[@]} req/s\\nExperiments: A) Vanilla, B2) DynamoLLM, D) S1+S2\\nResults: ${base_dir}\"}" \
-            "$SLACK_WEBHOOK_URL"
-    fi
 }
 
 main

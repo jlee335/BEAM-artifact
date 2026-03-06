@@ -27,8 +27,7 @@ We use `docker-compose` to start the evaluator environment:
 
 3. **Enter the Container**:
    ```bash
-   docker exec -it vllm_evaluator_env bash
-   cd /workspace/benchmarks/energy
+   docker exec -it -w /workspace/benchmarks/energy vllm_evaluator_env bash
    ```
 
 ## Reproducing Results

@@ -12,45 +12,26 @@ import re
 def get_trace_alias(trace_name):
     """
     Convert trace name to a shorter alias for display.
-    
+
     Args:
         trace_name: Full trace directory name
-        
+
     Returns:
         Shorter alias for display
     """
-    # Create aliases based on common patterns
-    aliases = {
-        's1_s2_fixed_chunk_512_clock_1830': 'TBT-based',
-        'tpot_based_fixed_chunk_512_clock_1830': 'TPOT-based',
-        'vanilla_fixed_chunk_512_clock_1830': 'Vanilla',
-    }
-    
-    # Return alias if exists, otherwise try to create one
-    if trace_name in aliases:
-        return aliases[trace_name]
-    
-    # Try to extract chunk size from mbt<number> pattern
-    chunk_size_match = re.search(r'mbt(\d+)', trace_name.lower())
-    chunk_size = chunk_size_match.group(1) if chunk_size_match else None
-    
-    # Try to extract meaningful parts
-    parts = trace_name.split('_')
-    if 's1' in parts and 's2' in parts:
-        if chunk_size:
-            return f'TBT-based_{chunk_size}'
-        return 'TBT-based'
-    elif 'tpot' in trace_name.lower():
-        if chunk_size:
-            return f'TPOT-based_{chunk_size}'
-        return 'TPOT-based'
-    elif 'vanilla' in trace_name.lower():
-        if chunk_size:
-            return f'Vanilla_{chunk_size}'
-        return 'Vanilla'
-    
-    # Fall back to abbreviated version
-    return trace_name[:15]
+    name = trace_name.lower()
+    if name.startswith('a_vanilla'):
+        return 'Vanilla vLLM'
+    elif name.startswith('b2_dynamollm'):
+        return 'DynamoLLM'
+    elif name.startswith('b3_s1_dvfs'):
+        return 'S1-DVFS Only'
+    elif name.startswith('c_s1_only'):
+        return 'S1 Only'
+    elif name.startswith('d_s1_s2'):
+        return 'BEAM (S1+S2)'
+    # Fallback: strip tp/pp suffix for readability
+    return re.sub(r'_tp\d+_pp\d+$', '', trace_name)
 
 
 def load_multiple_traces(parent_directory):

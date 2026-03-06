@@ -9,8 +9,6 @@
 
 model_name="Qwen/Qwen2.5-14B"
 
-SLACK_WEBHOOK_URL="${SLACK_WEBHOOK_URL}"
-
 source "$(dirname "$0")/utils.sh"
 
 # Default parallelism configuration (can be overridden)
@@ -107,13 +105,6 @@ main() {
     echo "  D) S1 + S2 (ours)" >> "$base_dir/ablation_summary.txt"
     echo "" >> "$base_dir/ablation_summary.txt"
     echo "Completed: $(date)" >> "$base_dir/ablation_summary.txt"
-    
-    # Slack notification
-    if command -v curl >/dev/null 2>&1; then
-        curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"✅ End-to-End Ablation Study Completed for ${model_name}\\nDataset: ${DATASET_PATH}\\nExperiments: A) Vanilla, B2) DynamoLLM, D) S1+S2\\nResults: ${base_dir}\"}" \
-            "$SLACK_WEBHOOK_URL"
-    fi
 }
 
 main
