@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  evaluator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: vllm-openai
+      args:
+        RUN_WHEEL_CHECK: 'false'
+        VLLM_USE_PRECOMPILED: '1'
+    image: vllm-evaluator:latest
+    container_name: vllm_evaluator_env
+    privileged: true
+    init: true
+    user: root
+    # Host IPC is necessary for PyTorch massive shared memory (equivalent to --shm-size)
+    ipc: host
+    environment:
+      - HF_HOME=/root/.cache/huggingface
+      - CUDA_HOME=/usr/local/cuda
+      - HF_TOKEN  # inherited from host environment if set
+    volumes:
+      # Mount the benchmarks directory to sync evaluation results back to the host
+      - ./benchmarks:/workspace/benchmarks
+      # Mount Hugging Face cache to avoid re-downloading massive models
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [ gpu ]
+    # Override the default vllm serve entrypoint
+    entrypoint: /bin/bash
+    # Install the extra evaluation dependencies at runtime to avoid bloating the production Dockerfile
+    command: >
+      -c " echo 'Installing evaluation dependencies...' && apt-get update && apt-get install -y bc curl && uv pip install --system pynvml matplotlib pandas seaborn scipy plotly pulp aiohttp tqdm huggingface-hub datasets && echo 'Evaluator environment ready.' && tail -f /dev/null "
