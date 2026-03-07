@@ -9,7 +9,10 @@ services:
       args:
         RUN_WHEEL_CHECK: 'false'
         VLLM_USE_PRECOMPILED: '1'
-    image: vllm-evaluator:latest
+        BUILDKIT_INLINE_CACHE: '1'
+      cache_from:
+        - jlee335/beam-volume-260307:latest
+    image: jlee335/beam-volume-260307:latest
     container_name: vllm_evaluator_env
     privileged: true
     init: true
