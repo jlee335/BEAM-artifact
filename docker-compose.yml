@@ -20,14 +20,14 @@ services:
     # Host IPC is necessary for PyTorch massive shared memory (equivalent to --shm-size)
     ipc: host
     environment:
-      - HF_HOME=/root/.cache/huggingface
+      - HF_HOME=/workspace/.cache/huggingface
       - CUDA_HOME=/usr/local/cuda
       - HF_TOKEN  # inherited from host environment if set
     volumes:
       # Mount the benchmarks directory to sync evaluation results back to the host
       - ./benchmarks:/workspace/benchmarks
       # Mount Hugging Face cache to avoid re-downloading massive models
-      - ~/.cache/huggingface:/root/.cache/huggingface
+      - ~/.cache/huggingface:/workspace/.cache/huggingface
     deploy:
       resources:
         reservations:
