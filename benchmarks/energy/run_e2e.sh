@@ -19,7 +19,7 @@ parallelism_configs=(
 # SLO targets as tuples: (TBT, TTFT)
 # Single SLO for ablation study
 SLO_TUPLES=(
-    "0.4:1.0"     # Single SLO for ablation
+    "0.2:1.0"     # Single SLO for ablation
 )
 
 FIXED_CHUNK_SIZE=2048
