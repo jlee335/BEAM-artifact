@@ -106,6 +106,20 @@ Output: `end_to_end/<dataset>_YYYYMMDD_HHMMSS/`
   ```
 
 - **Energy-Performance Pareto Frontier** *(optional, not included in `run_all.sh`)*:
+
+  Use `run_pareto_pipeline.sh` for the **full self-contained Pareto pipeline** (requires exactly 8 GPUs). It automatically runs offline profiling, DynamoLLM profiling, the Pareto sweep, and visualization for both `tp4_pp2` and `tp2_pp4` configurations:
+  ```bash
+  ./run_pareto_pipeline.sh --model meta-llama/Llama-3.3-70B-Instruct
+  ```
+  Pipeline steps executed internally:
+  1. Offline profiling — `tp4_pp2` and `tp2_pp4`
+  2. DynamoLLM profiling — `tp4_pp2` and `tp2_pp4`
+  3. Pareto sweep — `run_pareto.sh`
+  4. Visualization — `sensitivity_tests/visualize_pareto.py`
+
+  Output plots and CSV are saved under the latest `sensitivity_tests/pareto/pareto_analysis_*/` directory.
+
+  If you only want the sweep step (profiling already done), run `run_pareto.sh` directly:
   ```bash
   ./run_pareto.sh --model meta-llama/Llama-3.3-70B-Instruct
   ```
@@ -181,6 +195,7 @@ See [benchmarks/energy/PROFILING.md](benchmarks/energy/PROFILING.md) for a detai
 │   ├── run_e2e.sh           # End-to-end evaluation
 │   ├── run_ablation.sh      # Full ablation study
 │   ├── run_burst.sh / run_stair.sh / run_pareto.sh / run_fidelity.sh
+│   ├── run_pareto_pipeline.sh  # Full self-contained Pareto pipeline (8 GPUs)
 │   ├── datasets/            # Traced workload datasets (CSV)
 │   ├── visualization/       # Plotting scripts
 │   └── offline_profile_results/ / dynamollm_profiles/  # Generated profiles
