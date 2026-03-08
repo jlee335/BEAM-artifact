@@ -4,7 +4,8 @@ This repository contains the artifact for **BEAM**, an energy-aware inference sc
 
 ## Hardware & Software Requirements
 
-- **GPU Setup**: 1-8 GPUs (A100/H100 recommended), depending on your target parallelism configuration. The `run_*.sh` scripts derive GPU count automatically via `nvidia-smi`.
+- **GPU Setup**: 1-8 GPUs (A100 recommended), depending on your target parallelism configuration. The `run_*.sh` scripts derive GPU count automatically via `nvidia-smi`.
+  - **Paper evaluation setup**: 8× A100-80GB SXM GPUs, running `meta-llama/Llama-3.3-70B-Instruct` with `--tp 2 --pp 4`.
 - **System Requirements**:
   - Docker and Docker Compose (v2) installed.
   - NVIDIA Container Toolkit installed and properly mapped.
@@ -42,8 +43,8 @@ The simplest way to run the complete artifact evaluation is the unified `run_all
 
 ```bash
 ./run_all.sh \
-  --model Qwen/Qwen2.5-14B \
-  --tp 1 --pp 4 \
+  --model meta-llama/Llama-3.3-70B-Instruct \
+  --tp 2 --pp 4 \
   --dataset-path /workspace/benchmarks/energy/datasets/requests_lang_m-small_day1_19h00m-19h03m_200s_3rps.csv
 ```
 
@@ -59,7 +60,7 @@ If you prefer to run individual steps:
 
 Generates energy/latency lookup tables for your GPU and model configuration:
 ```bash
-./run_offline_profile.sh --model Qwen/Qwen2.5-14B --tp 1 --pp 4
+./run_offline_profile.sh --model meta-llama/Llama-3.3-70B-Instruct --tp 2 --pp 4
 ```
 Output: `offline_profile_results/dvfs_profile_<GPU>_<model>_tp<n>_pp<n>_one.csv`
 
@@ -67,7 +68,7 @@ Output: `offline_profile_results/dvfs_profile_<GPU>_<model>_tp<n>_pp<n>_one.csv`
 
 Generates baseline profiles following the DynamoLLM paper methodology:
 ```bash
-./run_dynamo_benchmark.sh --model Qwen/Qwen2.5-14B --tp 1 --pp 4
+./run_dynamo_benchmark.sh --model meta-llama/Llama-3.3-70B-Instruct --tp 2 --pp 4
 ```
 Output: `dynamollm_profiles/dynamo_dvfs_profile_<GPU>_<model>.csv`
 
@@ -76,7 +77,7 @@ Output: `dynamollm_profiles/dynamo_dvfs_profile_<GPU>_<model>.csv`
 Tests the three main configurations (Vanilla vLLM, DynamoLLM, S1+S2) on the traced dataset:
 ```bash
 ./run_e2e.sh \
-  --model Qwen/Qwen2.5-14B --tp 1 --pp 4 \
+  --model meta-llama/Llama-3.3-70B-Instruct --tp 2 --pp 4 \
   --dataset-path /workspace/benchmarks/energy/datasets/requests_lang_m-small_day1_19h00m-19h03m_200s_3rps.csv
 ```
 Output: `end_to_end/<dataset>_YYYYMMDD_HHMMSS/`
@@ -85,36 +86,35 @@ Output: `end_to_end/<dataset>_YYYYMMDD_HHMMSS/`
 
 - **Full Ablation Study** (Vanilla / DynamoLLM / S1-DVFS-only / S1-only / S1+S2):
   ```bash
-  ./run_ablation.sh --model Qwen/Qwen2.5-14B --tp 1 --pp 4
+  ./run_ablation.sh --model meta-llama/Llama-3.3-70B-Instruct --tp 2 --pp 4
   ```
 
 - **Burst Pattern Study** (L-L-H-L-L workload):
   ```bash
-  ./run_burst.sh --model Qwen/Qwen2.5-14B --tp 1 --pp 4
+  ./run_burst.sh --model meta-llama/Llama-3.3-70B-Instruct --tp 2 --pp 4
   ```
 
 - **Stair Pattern Study** (gradually increasing load):
   ```bash
-  ./run_stair.sh --model Qwen/Qwen2.5-14B --tp 1 --pp 4
+  ./run_stair.sh --model meta-llama/Llama-3.3-70B-Instruct --tp 2 --pp 4
   ```
 
 - **Fidelity Metrics**:
   ```bash
   ./run_fidelity.sh \
-    --model Qwen/Qwen2.5-14B --tp 1 --pp 4 \
-    --dataset-path /workspace/benchmarks/energy/datasets/requests_lang_m-small_day1_19h00m-19h03m_200s_3rps.csv
+    --model meta-llama/Llama-3.3-70B-Instruct --tp 2 --pp 4 
   ```
 
 - **Energy-Performance Pareto Frontier** *(optional, not included in `run_all.sh`)*:
   ```bash
-  ./run_pareto.sh --model Qwen/Qwen2.5-14B
+  ./run_pareto.sh --model meta-llama/Llama-3.3-70B-Instruct
   ```
 
 ---
 
 ## Expected Runtimes
 
-The following are approximate wall-clock times per step on 4x RTX A6000 GPUs with Qwen2.5-14B:
+The following are approximate wall-clock times per step on the paper evaluation setup (8× A100-80GB SXM, `meta-llama/Llama-3.3-70B-Instruct`, `--tp 2 --pp 4`):
 
 | Step | Script | Approx. Time |
 |------|--------|-------------|
