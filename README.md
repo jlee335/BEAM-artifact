@@ -186,10 +186,29 @@ See [benchmarks/energy/PROFILING.md](benchmarks/energy/PROFILING.md) for a detai
 
 ---
 
+## Dataset Generation
+
+The benchmark datasets (request traces) are pre-committed under `benchmarks/energy/datasets/`. To reproduce them or generate new ones, see [`dataset-generation/README.md`](dataset-generation/README.md).
+
+Quick start:
+
+```bash
+cd dataset-generation/
+pip install -r requirements.txt && pip install -e .
+python generate.py
+# Produces: datasets/requests_lang_m-small_day1_19h00m-20h00m_3600s_3rps.csv
+```
+
+---
+
 ## Repository Structure
 
 ```
 .
+├── dataset-generation/      # ServeGen workload generator (reproduces benchmark datasets)
+│   ├── generate.py          # Main generation script
+│   ├── servegen/            # ServeGen Python package
+│   └── data/language/m-small/  # Trace data for the primary benchmark
 ├── benchmarks/energy/       # Artifact evaluation scripts and datasets
 │   ├── run_all.sh           # Unified pipeline entry point
 │   ├── run_e2e.sh           # End-to-end evaluation
