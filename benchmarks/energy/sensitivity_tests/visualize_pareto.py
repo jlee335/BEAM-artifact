@@ -330,6 +330,24 @@ def create_pareto_plots(data_points, output_dir, use_power=True):
                             f'TP2_PP2: P90 TBT vs {y_label_short}', configs_tp2_pp2, config_colors,
                             config_markers, slo_min, slo_max, use_power, legend_handles)
 
+    # Synchronize axis scales: same x scale per metric, same y scale across all plots
+    y_col = 'power_w' if use_power else 'energy_kj'
+    pad = 0.05  # 5% padding
+
+    def padded(vmin, vmax):
+        margin = (vmax - vmin) * pad if vmax != vmin else abs(vmax) * pad or 1
+        return vmin - margin, vmax + margin
+
+    ttft_xmin, ttft_xmax = padded(df['p90_ttft_ms'].min(), df['p90_ttft_ms'].max())
+    tbt_xmin, tbt_xmax = padded(df['p90_tbt_ms'].min(), df['p90_tbt_ms'].max())
+    y_min, y_max = padded(df[y_col].min(), df[y_col].max())
+
+    for row in range(2):
+        axes[row, 0].set_xlim(ttft_xmin, ttft_xmax)
+        axes[row, 1].set_xlim(tbt_xmin, tbt_xmax)
+        for col in range(2):
+            axes[row, col].set_ylim(y_min, y_max)
+
     # Add shared legend
     labels = [handle.get_label() for handle in legend_handles]
     fig.legend(legend_handles, labels, loc='lower center', bbox_to_anchor=(0.5, -0.02), 
