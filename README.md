@@ -45,7 +45,7 @@ The simplest way to run the complete artifact evaluation is the unified `run_all
 ./run_all.sh \
   --model meta-llama/Llama-3.3-70B-Instruct \
   --tp 2 --pp 4 \
-  --dataset-path /workspace/benchmarks/energy/datasets/requests_lang_m-small_day1_19h00m-19h03m_200s_3rps.csv
+  --dataset-path /workspace/benchmarks/energy/datasets/requests_lang_m-small_day1_19h00m-20h00m_3600s_3rps.csv
 ```
 
 This runs all steps below in sequence and exits on the first failure.
@@ -78,7 +78,7 @@ Tests the three main configurations (Vanilla vLLM, DynamoLLM, S1+S2) on the trac
 ```bash
 ./run_e2e.sh \
   --model meta-llama/Llama-3.3-70B-Instruct --tp 2 --pp 4 \
-  --dataset-path /workspace/benchmarks/energy/datasets/requests_lang_m-small_day1_19h00m-19h03m_200s_3rps.csv
+  --dataset-path /workspace/benchmarks/energy/datasets/requests_lang_m-small_day1_19h00m-20h00m_3600s_3rps.csv
 ```
 Output: `end_to_end/<dataset>_YYYYMMDD_HHMMSS/`
 
