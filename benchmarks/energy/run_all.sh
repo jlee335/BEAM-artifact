@@ -139,7 +139,13 @@ run_step "Fidelity Test" \
         --model "$MODEL" --tp "$TP" --pp "$PP" \
         --dataset-path "$DATASET_PATH"
 
+# ── Visualize all results into a single directory ──
+
+RESULTS_DIR="$SCRIPT_DIR/results_$(date +%Y%m%d_%H%M%S)"
+bash "$SCRIPT_DIR/collect_visualizations.sh" --output-dir "$RESULTS_DIR"
+
 echo ""
 echo "=============================================="
 echo "All artifact evaluation steps complete!"
+echo "Visualizations saved to: $RESULTS_DIR"
 echo "=============================================="

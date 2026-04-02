@@ -631,7 +631,13 @@ if __name__ == "__main__":
         default="auto",
         help="Visualization mode: 'single' for one trace, 'multiple' for comparing multiple traces, 'auto' to detect automatically"
     )
- 
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Output directory for visualizations (default: inside base_directory)"
+    )
+
     args = parser.parse_args()
     
     # Determine mode automatically if set to auto
@@ -658,9 +664,9 @@ if __name__ == "__main__":
     if mode == "single":
         # Original single trace visualization
         trace_data = TraceData(args.base_directory)
-        
+
         # Create visualization directory
-        viz_dir = os.path.join(args.base_directory, "visualization")
+        viz_dir = args.output_dir if args.output_dir else os.path.join(args.base_directory, "visualization")
         os.makedirs(viz_dir, exist_ok=True)
         
         # Generate filename based on the trace data
@@ -684,7 +690,7 @@ if __name__ == "__main__":
             print(f"  - {name}")
         
         # Create visualization directory
-        viz_dir = os.path.join(args.base_directory, "comparison_visualizations")
+        viz_dir = args.output_dir if args.output_dir else os.path.join(args.base_directory, "comparison_visualizations")
         os.makedirs(viz_dir, exist_ok=True)
         
         # Generate distributions plot

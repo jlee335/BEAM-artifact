@@ -500,3 +500,17 @@ FROM vllm-openai-base AS vllm-openai
 
 ENTRYPOINT ["vllm", "serve"]
 #################### OPENAI API SERVER ####################
+
+#################### BEAM EVALUATOR ####################
+FROM vllm-openai AS vllm-evaluator
+
+# bc is required by benchmarks/energy/utils.sh for SLO calculations
+# curl is already installed in vllm-base
+RUN apt-get update -y && apt-get install -y bc && rm -rf /var/lib/apt/lists/*
+
+COPY requirements/eval.txt requirements/eval.txt
+RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system -r requirements/eval.txt
+
+ENTRYPOINT ["/bin/bash"]
+#################### BEAM EVALUATOR ####################
