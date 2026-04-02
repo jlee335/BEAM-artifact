@@ -10,6 +10,7 @@ This repository contains the artifact for **BEAM**, an energy-aware inference sc
   - Docker and Docker Compose (v2) installed.
   - NVIDIA Container Toolkit installed and properly mapped.
   - At least 200 GB disk space for model weights (typically stored in your Hugging Face cache).
+  - User must have enough privilege to run `--privileged` flag docker. This privilege is required to let NVML change GPU clocks.
 
 ## Reviewer Quick Start
 
