@@ -1,0 +1,11 @@
+pynvml
+matplotlib
+pandas
+seaborn
+scipy
+plotly
+pulp
+aiohttp
+tqdm
+huggingface-hub
+datasets
