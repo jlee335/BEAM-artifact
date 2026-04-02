@@ -12,6 +12,7 @@
 #
 # Usage:
 #   ./run_all.sh --model <name> --tp <size> --pp <size> --dataset-path <path>
+#   ./run_all.sh --skip-profiling --model <name> --tp <size> --pp <size> --dataset-path <path>
 #
 # Example:
 #   ./run_all.sh --model Qwen/Qwen2.5-14B --tp 1 --pp 4 \
@@ -33,6 +34,7 @@ MODEL="Qwen/Qwen2.5-14B"
 TP=1
 PP=4
 DATASET_PATH=""
+SKIP_PROFILING=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -41,8 +43,9 @@ while [[ $# -gt 0 ]]; do
         --tp) TP="$2"; shift 2 ;;
         --pp) PP="$2"; shift 2 ;;
         --dataset-path) DATASET_PATH="$2"; shift 2 ;;
+        --skip-profiling) SKIP_PROFILING=true; shift ;;
         -h|--help)
-            echo "Usage: $0 --model <name> --tp <size> --pp <size> --dataset-path <path>"
+            echo "Usage: $0 [--skip-profiling] --model <name> --tp <size> --pp <size> --dataset-path <path>"
             exit 0
             ;;
         *) echo "Unknown option: $1"; exit 1 ;;
@@ -66,6 +69,7 @@ echo "=============================================="
 echo "Model:        $MODEL"
 echo "TP x PP:      ${TP} x ${PP}"
 echo "Dataset:      $DATASET_PATH"
+echo "Skip Profile: $SKIP_PROFILING"
 echo "=============================================="
 
 run_step() {
@@ -82,13 +86,32 @@ run_step() {
     echo "====== Done: $step_name ======"
 }
 
-run_step "Offline Profiling (System Profiles)" \
-    bash "$SCRIPT_DIR/run_offline_profile.sh" \
-        --model "$MODEL" --tp "$TP" --pp "$PP"
+if [[ "$SKIP_PROFILING" == "true" ]]; then
+    echo ""
+    echo "====== Skipping profiling steps (--skip-profiling) ======"
+    # Verify that pre-computed profiles exist
+    GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1 | xargs)
+    MODEL_CLEANED=$(echo "$MODEL" | sed 's/\//_/g')
+    MODEL_SHORT=$(echo "$MODEL" | sed 's|.*/||')
+    SYSTEM_CSV="$SCRIPT_DIR/offline_profile_results/dvfs_profile_${GPU_NAME}_${MODEL_CLEANED}_tp${TP}_pp${PP}_one.csv"
+    DYNAMO_CSV="$SCRIPT_DIR/dynamollm_profiles/dynamo_dvfs_profile_${GPU_NAME}_${MODEL_SHORT}.csv"
+    if [[ ! -f "$SYSTEM_CSV" ]]; then
+        echo "WARNING: System profile not found: $SYSTEM_CSV"
+        echo "  S1/S2 scheduling may not work. Run without --skip-profiling to generate it."
+    fi
+    if [[ ! -f "$DYNAMO_CSV" ]]; then
+        echo "WARNING: DynamoLLM profile not found: $DYNAMO_CSV"
+        echo "  DynamoLLM baseline may not work. Run without --skip-profiling to generate it."
+    fi
+else
+    run_step "Offline Profiling (System Profiles)" \
+        bash "$SCRIPT_DIR/run_offline_profile.sh" \
+            --model "$MODEL" --tp "$TP" --pp "$PP"
 
-run_step "Offline Profiling (DynamoLLM Profiles)" \
-    bash "$SCRIPT_DIR/run_dynamo_benchmark.sh" \
-        --model "$MODEL" --tp "$TP" --pp "$PP"
+    run_step "Offline Profiling (DynamoLLM Profiles)" \
+        bash "$SCRIPT_DIR/run_dynamo_benchmark.sh" \
+            --model "$MODEL" --tp "$TP" --pp "$PP"
+fi
 
 run_step "End-to-End Evaluation" \
     bash "$SCRIPT_DIR/run_e2e.sh" \
@@ -107,9 +130,9 @@ run_step "Stair Pattern Study" \
     bash "$SCRIPT_DIR/run_stair.sh" \
         --model "$MODEL" --tp "$TP" --pp "$PP"
 
-# run_step "Pareto Frontier Analysis" \
-#     bash "$SCRIPT_DIR/run_pareto.sh" \
-#         --model "$MODEL"
+run_step "Pareto Frontier Analysis" \
+    bash "$SCRIPT_DIR/run_pareto.sh" \
+        --model "$MODEL"
 
 run_step "Fidelity Test" \
     bash "$SCRIPT_DIR/run_fidelity.sh" \
