@@ -157,7 +157,12 @@ else
     done
 fi
 
-# ── 6. Verdict ───────────────────────────────────────────────────────────────
+# ── 6. Visualize results ────────────────────────────────────────────────────
+
+RESULTS_DIR="$SCRIPT_DIR/results_smoke_$(date +%Y%m%d_%H%M%S)"
+bash "$SCRIPT_DIR/collect_visualizations.sh" --output-dir "$RESULTS_DIR"
+
+# ── 7. Verdict ───────────────────────────────────────────────────────────────
 
 echo ""
 echo "=============================================="
@@ -166,6 +171,8 @@ if [[ "$PASS" == true ]]; then
     echo "=============================================="
     echo ""
     echo "  The environment is correctly configured."
+    echo "  Visualizations saved to: $RESULTS_DIR"
+    echo ""
     echo "  Proceed with the full evaluation:"
     echo ""
     echo "    ./run_all.sh --skip-profiling \\"

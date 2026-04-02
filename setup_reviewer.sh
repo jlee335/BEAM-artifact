@@ -8,6 +8,8 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 CONTAINER_NAME="vllm_evaluator_env"
 IMAGE_NAME="jlee335/beam-volume-260307:latest"
 STARTUP_TIMEOUT=120
+DEFAULT_MODEL="meta-llama/Llama-3.3-70B-Instruct"
+MODEL="$DEFAULT_MODEL"
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -21,6 +23,38 @@ fail() { err "$*"; exit 1; }
 check_cmd() {
     command -v "$1" &>/dev/null || fail "'$1' is not installed. Please install it first."
 }
+
+usage() {
+    cat <<EOF
+Usage: $0 [--model MODEL_ID]
+
+Options:
+  --model MODEL_ID   Hugging Face model ID to use (default: $DEFAULT_MODEL)
+  -h, --help         Show this help message
+EOF
+}
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --model)
+            [[ $# -ge 2 ]] || fail "--model requires a value."
+            MODEL="$2"
+            shift 2
+            ;;
+        --model=*)
+            MODEL="${1#*=}"
+            [[ -n "$MODEL" ]] || fail "--model requires a non-empty value."
+            shift
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        *)
+            fail "Unknown argument: $1. Use --help for usage."
+            ;;
+    esac
+done
 
 # ── 1. Prerequisites ────────────────────────────────────────────────────────
 
@@ -85,12 +119,13 @@ fi
 
 # ── 4. Model cache check ────────────────────────────────────────────────────
 
-MODEL_CACHE="$HOME/.cache/huggingface/hub/models--meta-llama--Llama-3.3-70B-Instruct/snapshots"
+MODEL_CACHE_KEY="${MODEL//\//--}"
+MODEL_CACHE="$HOME/.cache/huggingface/hub/models--${MODEL_CACHE_KEY}/snapshots"
 if [[ -d "$MODEL_CACHE" ]] && [[ -n "$(ls -A "$MODEL_CACHE" 2>/dev/null)" ]]; then
-    ok "Model cache found at $MODEL_CACHE."
+    ok "Model cache found for $MODEL at $MODEL_CACHE."
 else
     warn "Model cache not found at $MODEL_CACHE."
-    echo "    The primary model (meta-llama/Llama-3.3-70B-Instruct, ~140 GB) will be"
+    echo "    The selected model ($MODEL) will be"
     echo "    downloaded on the first benchmark run. Ensure sufficient disk space."
 fi
 
@@ -166,7 +201,7 @@ echo "    ./smoke_test.sh"
 echo ""
 echo "  Full evaluation (~5-6 hours, 1-hour dataset):"
 echo "    ./run_all.sh --skip-profiling \\"
-echo "      --model meta-llama/Llama-3.3-70B-Instruct \\"
+echo "      --model $MODEL \\"
 echo "      --tp 2 --pp 4 \\"
 echo "      --dataset-path /workspace/benchmarks/energy/datasets/requests_lang_m-small_day1_19h00m-20h00m_3600s_3rps.csv"
 echo ""

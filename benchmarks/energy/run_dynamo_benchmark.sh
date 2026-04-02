@@ -14,7 +14,8 @@ echo "🚀 Starting automated profiling based on DynamoLLM paper..."
 
 # --- Configuration ---
 # Set the model and other static parameters here
-model_name="Qwen/Qwen2.5-32B"
+# model_name="Qwen/Qwen2.5-32B"
+model_name="Qwen/Qwen2.5-14B"
 # model_name="meta-llama/Llama-3.3-70B-Instruct"
 python_script="benchmark_script.py"
 python_exec="python3"
@@ -25,7 +26,8 @@ NUM_GPUS=$(nvidia-smi --list-gpus | wc -l)
 
 # Multiple parallelism configurations to test (format: tp:pp)
 # parallelism_configs="4:2 2:4"
-parallelism_configs="2:2 1:4"
+# parallelism_configs="2:2 1:4"
+parallelism_configs="1:1"
 
 # Parse command line arguments
 _MODEL="" _TP="" _PP=""

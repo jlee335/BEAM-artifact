@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
-      target: vllm-openai
+      target: vllm-evaluator
       args:
         RUN_WHEEL_CHECK: 'false'
         VLLM_USE_PRECOMPILED: '1'
@@ -37,6 +37,6 @@ services:
               capabilities: [ gpu ]
     # Override the default vllm serve entrypoint
     entrypoint: /bin/bash
-    # Install the extra evaluation dependencies at runtime to avoid bloating the production Dockerfile
+    # Evaluation dependencies are baked into the vllm-evaluator Dockerfile stage
     command: >
-      -c " echo 'Installing evaluation dependencies...' && apt-get update && apt-get install -y bc curl && uv pip install --system pynvml matplotlib pandas seaborn scipy plotly pulp aiohttp tqdm huggingface-hub datasets && echo 'Evaluator environment ready.' && tail -f /dev/null "
+      -c "echo 'Evaluator environment ready.' && tail -f /dev/null"
