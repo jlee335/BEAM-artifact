@@ -147,7 +147,7 @@ def main():
     parser.add_argument("--rate", type=float, default=3.0, help="Requests per second")
     parser.add_argument("--start", type=parse_hhmm, default="19:00",
                         metavar="HH:MM", help="Window start time")
-    parser.add_argument("--end", type=parse_hhmm, default="20:00",
+    parser.add_argument("--end", type=parse_hhmm, default="19:10",
                         metavar="HH:MM", help="Window end time")
     parser.add_argument("--day", type=int, default=1, help="Day index (0-based)")
     parser.add_argument("--duration", type=int, default=None,

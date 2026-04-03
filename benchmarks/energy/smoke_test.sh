@@ -88,13 +88,28 @@ if [[ -f "$SYSTEM_PROFILE" ]]; then
     ok "System profile found: $SYSTEM_PROFILE"
 else
     warn "System profile not found: $SYSTEM_PROFILE"
-    echo "    Run offline profiling first or use --skip-profiling with pre-shipped profiles."
+    info "Running offline profiling to generate system profile..."
+    bash "$SCRIPT_DIR/run_offline_profile.sh" \
+        --model "$MODEL" --tp "$TP" --pp "$PP"
+    if [[ -f "$SYSTEM_PROFILE" ]]; then
+        ok "System profile generated: $SYSTEM_PROFILE"
+    else
+        fail "Failed to generate system profile."
+    fi
 fi
 
 if [[ -f "$DYNAMO_PROFILE" ]]; then
     ok "DynamoLLM profile found: $DYNAMO_PROFILE"
 else
     warn "DynamoLLM profile not found: $DYNAMO_PROFILE"
+    info "Running DynamoLLM benchmark to generate profile..."
+    bash "$SCRIPT_DIR/run_dynamo_benchmark.sh" \
+        --model "$MODEL" --tp "$TP" --pp "$PP"
+    if [[ -f "$DYNAMO_PROFILE" ]]; then
+        ok "DynamoLLM profile generated: $DYNAMO_PROFILE"
+    else
+        fail "Failed to generate DynamoLLM profile."
+    fi
 fi
 
 # ── 3. Check dataset exists ─────────────────────────────────────────────────

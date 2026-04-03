@@ -136,8 +136,7 @@ run_step "Pareto Frontier Analysis" \
 
 run_step "Fidelity Test" \
     bash "$SCRIPT_DIR/run_fidelity.sh" \
-        --model "$MODEL" --tp "$TP" --pp "$PP" \
-        --dataset-path "$DATASET_PATH"
+        --model "$MODEL" --tp "$TP" --pp "$PP"
 
 # ── Visualize all results into a single directory ──
 
