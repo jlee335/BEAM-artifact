@@ -15,6 +15,7 @@ MODEL="meta-llama/Llama-3.3-70B-Instruct"
 TP=2
 PP=4
 DATASET="datasets/requests_lang_m-small_day1_19h00m-19h03m_200s_3rps.csv"
+RUN_PROFILES=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -23,8 +24,9 @@ while [[ $# -gt 0 ]]; do
         --tp) TP="$2"; shift 2 ;;
         --pp) PP="$2"; shift 2 ;;
         --dataset-path) DATASET="$2"; shift 2 ;;
+        --run-profiles) RUN_PROFILES=true; shift ;;
         -h|--help)
-            echo "Usage: $0 [--model <name>] [--tp <n>] [--pp <n>] [--dataset-path <path>]"
+            echo "Usage: $0 [--run-profiles] [--model <name>] [--tp <n>] [--pp <n>] [--dataset-path <path>]"
             exit 0
             ;;
         *) echo "Unknown option: $1"; exit 1 ;;
@@ -78,37 +80,52 @@ fi
 info "Checking offline profiles..."
 
 # Derive GPU name for profile lookup
-GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader | head -1 | xargs)
+GPU_NAME=$(nvidia-smi -i 0 --query-gpu=name --format=csv,noheader | xargs)
 MODEL_CLEANED=$(echo "$MODEL" | sed 's/\//_/g')
 
 SYSTEM_PROFILE="offline_profile_results/dvfs_profile_${GPU_NAME}_${MODEL_CLEANED}_tp${TP}_pp${PP}_one.csv"
-DYNAMO_PROFILE="dynamollm_profiles/dynamo_dvfs_profile_${GPU_NAME}_$(echo "$MODEL" | sed 's|.*/||').csv"
+DYNAMO_PROFILE="dynamollm_profiles/dynamo_dvfs_profile_${GPU_NAME}_${MODEL_CLEANED}.csv"
 
+MISSING_PROFILES=()
 if [[ -f "$SYSTEM_PROFILE" ]]; then
     ok "System profile found: $SYSTEM_PROFILE"
 else
-    warn "System profile not found: $SYSTEM_PROFILE"
-    info "Running offline profiling to generate system profile..."
-    bash "$SCRIPT_DIR/run_offline_profile.sh" \
-        --model "$MODEL" --tp "$TP" --pp "$PP"
-    if [[ -f "$SYSTEM_PROFILE" ]]; then
-        ok "System profile generated: $SYSTEM_PROFILE"
-    else
-        fail "Failed to generate system profile."
-    fi
+    MISSING_PROFILES+=("$SYSTEM_PROFILE")
 fi
 
 if [[ -f "$DYNAMO_PROFILE" ]]; then
     ok "DynamoLLM profile found: $DYNAMO_PROFILE"
 else
-    warn "DynamoLLM profile not found: $DYNAMO_PROFILE"
-    info "Running DynamoLLM benchmark to generate profile..."
-    bash "$SCRIPT_DIR/run_dynamo_benchmark.sh" \
-        --model "$MODEL" --tp "$TP" --pp "$PP"
-    if [[ -f "$DYNAMO_PROFILE" ]]; then
-        ok "DynamoLLM profile generated: $DYNAMO_PROFILE"
+    MISSING_PROFILES+=("$DYNAMO_PROFILE")
+fi
+
+if [[ ${#MISSING_PROFILES[@]} -gt 0 ]]; then
+    if [[ "$RUN_PROFILES" == true ]]; then
+        info "Generating missing profiles..."
+        bash "$SCRIPT_DIR/run_offline_profile.sh" \
+            --model "$MODEL" --tp "$TP" --pp "$PP"
+        bash "$SCRIPT_DIR/run_dynamo_benchmark.sh" \
+            --model "$MODEL" --tp "$TP" --pp "$PP"
+        # Re-check after generation
+        for p in "${MISSING_PROFILES[@]}"; do
+            if [[ -f "$p" ]]; then
+                ok "Profile generated: $p"
+            else
+                fail "Failed to generate profile: $p"
+                echo ""
+                echo "VERDICT: FAIL"
+                exit 1
+            fi
+        done
     else
-        fail "Failed to generate DynamoLLM profile."
+        for p in "${MISSING_PROFILES[@]}"; do
+            fail "Profile not found: $p"
+        done
+        echo ""
+        echo "  Missing profiles. Re-run with --run-profiles to generate them:"
+        echo "    $0 --run-profiles --model $MODEL --tp $TP --pp $PP"
+        echo ""
+        exit 1
     fi
 fi
 

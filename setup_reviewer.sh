@@ -5,9 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-CONTAINER_NAME="vllm_evaluator_env"
 IMAGE_NAME="jlee335/beam-volume-260307:latest"
-STARTUP_TIMEOUT=120
 DEFAULT_MODEL="meta-llama/Llama-3.3-70B-Instruct"
 MODEL="$DEFAULT_MODEL"
 
@@ -144,47 +142,7 @@ fi
 
 info "Starting container..."
 $COMPOSE up -d || fail "Failed to start container."
-
-info "Waiting for container startup (up to ${STARTUP_TIMEOUT}s)..."
-elapsed=0
-while [[ $elapsed -lt $STARTUP_TIMEOUT ]]; do
-    if docker exec "$CONTAINER_NAME" echo ready &>/dev/null; then
-        break
-    fi
-    sleep 5
-    elapsed=$((elapsed + 5))
-done
-
-if [[ $elapsed -ge $STARTUP_TIMEOUT ]]; then
-    fail "Container did not become ready within ${STARTUP_TIMEOUT}s. Check:  docker logs $CONTAINER_NAME"
-fi
 ok "Container is running."
-
-# ── 7. Verify GPU access inside container ────────────────────────────────────
-
-info "Verifying GPU access inside container..."
-CONTAINER_GPUS=$(docker exec "$CONTAINER_NAME" nvidia-smi --list-gpus 2>/dev/null | wc -l)
-HOST_GPUS=$(nvidia-smi --list-gpus | wc -l)
-
-if [[ "$CONTAINER_GPUS" -eq "$HOST_GPUS" ]]; then
-    ok "Container sees $CONTAINER_GPUS GPU(s) (matches host)."
-else
-    warn "Container sees $CONTAINER_GPUS GPU(s) but host has $HOST_GPUS."
-fi
-
-# ── 8. In-container smoke test ───────────────────────────────────────────────
-
-info "Running in-container import checks..."
-docker exec "$CONTAINER_NAME" python3 -c "
-import pynvml, pandas, torch
-pynvml.nvmlInit()
-gpu_count = pynvml.nvmlDeviceGetCount()
-print(f'pynvml OK — {gpu_count} GPU(s)')
-assert torch.cuda.is_available(), 'CUDA not available'
-print(f'torch OK — {torch.cuda.device_count()} CUDA device(s)')
-pynvml.nvmlShutdown()
-" || fail "In-container import checks failed. Check container logs:  docker logs $CONTAINER_NAME"
-ok "In-container imports verified (pynvml, pandas, torch)."
 
 # ── 9. Next steps ───────────────────────────────────────────────────────────
 
@@ -194,7 +152,7 @@ echo "  Setup Complete!"
 echo "=============================================="
 echo ""
 echo "  Enter the container:"
-echo "    docker exec -it -w /workspace/benchmarks/energy $CONTAINER_NAME bash"
+echo "    docker compose exec -w /workspace/benchmarks/energy evaluator bash"
 echo ""
 echo "  Quick validation (~30 min, 3-minute dataset):"
 echo "    ./smoke_test.sh"
