@@ -130,9 +130,9 @@ run_step "Stair Pattern Study" \
     bash "$SCRIPT_DIR/run_stair.sh" \
         --model "$MODEL" --tp "$TP" --pp "$PP"
 
-run_step "Pareto Frontier Analysis" \
-    bash "$SCRIPT_DIR/run_pareto.sh" \
-        --model "$MODEL"
+# run_step "Pareto Frontier Analysis" \
+#     bash "$SCRIPT_DIR/run_pareto.sh" \
+#         --model "$MODEL"
 
 run_step "Fidelity Test" \
     bash "$SCRIPT_DIR/run_fidelity.sh" \
