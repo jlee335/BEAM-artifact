@@ -160,12 +160,12 @@ The following are approximate wall-clock times per step on the paper evaluation 
 |------|--------|-------------|
 | System profiling | `run_offline_profile.sh` | ~30-60 min |
 | DynamoLLM profiling | `run_dynamo_benchmark.sh` | ~60-90 min |
-| End-to-end ablation | `run_e2e.sh` | ~30 min |
-| Full ablation study | `run_ablation.sh` | ~60 min |
+| End-to-end ablation | `run_e2e.sh` | ~40 min (200min when full 1-hour trace) |
+| Full ablation study | `run_ablation.sh` | ~30 min |
 | Burst study | `run_burst.sh` | ~20 min |
 | Stair study | `run_stair.sh` | ~20 min |
 | Fidelity test | `run_fidelity.sh` | ~20 min |
-| **Full pipeline** | `run_all.sh` | **~5-6 hours** |
+| **Full pipeline** | `run_all.sh` | **~2-3 hours** |
 
 ---
 
