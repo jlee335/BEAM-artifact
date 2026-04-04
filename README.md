@@ -171,15 +171,27 @@ The following are approximate wall-clock times per step on the paper evaluation 
 
 ## Visualizing Results
 
-Three scripts are provided to plot results after benchmarks complete:
+Three Python scripts and a convenience wrapper are provided to plot results after benchmarks complete:
 
 | Script | Used After | What It Shows |
 |--------|-----------|---------------|
 | `visualization/visualize_multiple_traces.py` | `run_e2e.sh`, `run_ablation.sh` | Bar charts + histograms comparing energy & latency across configs |
 | `visualization/visualize_timeline.py` | `run_burst.sh`, `run_stair.sh` | Windowed timeline of TTFT, TBT, and energy over time |
 | `visualization/visualize_fidelity.py` | `run_fidelity.sh` | Actual vs. estimated TTFT and TBT/ITL scatter and error plots |
+| `visualize_all.sh` | Any/all of the above | Auto-detects the latest result directory for each experiment type and runs the matching visualization script; skips experiments with no results |
 
-**Quick examples:**
+**Visualize everything at once:**
+```bash
+# Auto-detect latest results for all experiment types
+./visualize_all.sh
+
+# Override specific directories or window sizes
+./visualize_all.sh --end-to-end end_to_end/my_run/ --burst-window 5.0
+```
+
+Options: `--end-to-end <dir>`, `--ablation <dir>`, `--burst <dir>`, `--stair <dir>`, `--fidelity <dir>`, `--burst-window <s>` (default 5.0), `--stair-window <s>` (default 3.0).
+
+**Individual script examples:**
 ```bash
 # After run_e2e or run_ablation
 python3 visualization/visualize_multiple_traces.py end_to_end/dataset_YYYYMMDD_HHMMSS/
@@ -241,6 +253,7 @@ python generate.py
 │   ├── run_ablation.sh      # Full ablation study
 │   ├── run_burst.sh / run_stair.sh / run_pareto.sh / run_fidelity.sh
 │   ├── run_pareto_pipeline.sh  # Full self-contained Pareto pipeline (8 GPUs)
+│   ├── visualize_all.sh        # One-command visualization for all experiments
 │   ├── datasets/            # Traced workload datasets (CSV)
 │   ├── visualization/       # Plotting scripts
 │   └── offline_profile_results/ / dynamollm_profiles/  # Generated profiles
