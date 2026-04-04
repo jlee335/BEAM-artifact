@@ -28,11 +28,11 @@ docker exec -it -w /workspace/benchmarks/energy vllm_evaluator_env bash
 # 3. Quick validation (~30 min) — runs a 3-minute trace through all configs
 ./smoke_test.sh
 
-# 4. Full evaluation (~5-6 hours) — uses pre-shipped A100 profiles, skips profiling
+# 4. Full evaluation (2~3 hours) — uses pre-shipped A100 profiles, skips profiling
 ./run_all.sh --skip-profiling \
   --model meta-llama/Llama-3.3-70B-Instruct \
   --tp 2 --pp 4 \
-  --dataset-path /workspace/benchmarks/energy/datasets/requests_lang_m-small_day1_19h00m-20h00m_3600s_3rps.csv
+  --dataset-path /workspace/benchmarks/energy/datasets/requests_lang_m-small_day1_19h00m-19h10m_600s_3rps.csv
 ```
 
 > **Note:** `setup_reviewer.sh` calls `check_fabricmanager.sh` automatically, which verifies that `nvidia-persistenced` and `nvidia-fabricmanager` are running (required for SXM4 NVSwitch and DVFS clock locking).
